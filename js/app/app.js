@@ -405,7 +405,8 @@ angular.module('appCtrls', [
       bullet.castShadow = true
       $scope.bullets.push(bullet)
       $scope.scene.add(bullet)
-      startControls($document[0])
+
+      startControls($document[0]) // added this so all clicks regain pointer lock
     }
 
     $scope.updateBullets = function (delta) {
