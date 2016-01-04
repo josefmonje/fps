@@ -2,18 +2,12 @@
 'use strict'
 
 angular.module('app', [
-  'ngRoute',
-  'ngResource',
-  // 'ngFileUpload',
   'appCfgs',
-  'appRoutes',
   'appCtrls',
   'rooms',
 ])
 
-angular.module('appCtrls', [
-  'geolocation',
-])
+angular.module('appCtrls', [])
 .constant('moveCfgs', {
   MOVESPEED: 250,
   STRAFESPEED: 250,
@@ -25,21 +19,13 @@ angular.module('appCtrls', [
   function () {
     var element = document.body
     this.change = function () {
-      return document.pointerLockElement === element
-          || document.mozPointerLockElement === element
-          || document.webkitPointerLockElement === element
+      return document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element
     }
-    this.available = function () {
-      // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
-      return 'pointerLockElement' in document
-          || 'mozPointerLockElement' in document
-          || 'webkitPointerLockElement' in document
+    this.available = function () { // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
+      return 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document
     }
-    this.request = function () {
-      // Ask the browser to lock the pointer
-      return element.requestPointerLock
-          || element.mozRequestPointerLock
-          || element.webkitRequestPointerLock
+    this.request = function () { // Ask the browser to lock the pointer
+      return element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock
     }
   }
 ])
@@ -47,15 +33,10 @@ angular.module('appCtrls', [
   function () {
     var element = document.body
     this.element = function () {
-      return document.fullscreenElement === element
-          || document.mozFullscreenElement === element
-          || document.mozFullScreenElement === element
+      return document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element
     }
     this.request = function () {
-      return element.requestFullscreen
-          || element.mozRequestFullscreen
-          || element.mozRequestFullScreen
-          || element.webkitRequestFullscreen
+      return element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen
     }
   }
 ])
@@ -70,69 +51,42 @@ angular.module('appCtrls', [
     var interact = false
     var reset = false
     var projector = new THREE.Projector()
-    $scope.camera = new THREE.PerspectiveCamera(
-      75, window.innerWidth / window.innerHeight, 1, 1000)
+    $scope.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000)
     $scope.controls = new THREE.PointerLockControls($scope.camera)
     $scope.myPosition = $scope.controls.getObject().position
     $scope.controlsEnabled = false
     $scope.mouse = {x: 0, y: 0}
     $scope.bullets = []
 
+    var onWindowResize = function () {
+      $scope.camera.aspect = window.innerWidth / window.innerHeight
+      $scope.camera.updateProjectionMatrix()
+      renderer.setSize(window.innerWidth, window.innerHeight)
+    }
+    window.addEventListener('resize', onWindowResize, false)
+
     var onKeyDown = function (event) {
-      if (event.keyCode == 38 || event.keyCode == 87) {
-        moveForward = true
-      } else
-      if (event.keyCode == 37 || event.keyCode == 65) {
-        moveLeft = true
-      } else
-      if (event.keyCode == 40 || event.keyCode == 83) {
-        moveBackward = true
-      } else
-      if (event.keyCode == 39 || event.keyCode == 68) {
-        moveRight = true
-      } else
+      if (event.keyCode == 16) { isRunning = true } else
+      if (event.keyCode == 82) { interact = true } else
+      if (event.keyCode == 81) { reset = true } else
+      if (event.keyCode == 38 || event.keyCode == 87) { moveForward = true } else
+      if (event.keyCode == 37 || event.keyCode == 65) { moveLeft = true } else
+      if (event.keyCode == 40 || event.keyCode == 83) { moveBackward = true } else
+      if (event.keyCode == 39 || event.keyCode == 68) { moveRight = true } else
       if (event.keyCode == 32) {
-        if (canJump === true) {
-          $scope.velocity.y += moveCfgs.JUMP_HEIGHT
-        }
+        if (canJump === true) { $scope.velocity.y += moveCfgs.JUMP_HEIGHT }
         canJump = false
-      }
-
-      if (event.keyCode == 16) {
-        isRunning = true
-      }
-
-      if (event.keyCode == 82) {
-        interact = true
-      }
-
-      if (event.keyCode == 81) {
-        reset = true
       }
     }
 
     var onKeyUp = function (event) {
-      if (event.keyCode == 38 || event.keyCode == 87) {
-        moveForward = false
-      } else
-      if (event.keyCode == 37 || event.keyCode == 65) {
-        moveLeft = false
-      } else
-      if (event.keyCode == 40 || event.keyCode == 83) {
-        moveBackward = false
-      } else
-      if (event.keyCode == 39 || event.keyCode == 68) {
-        moveRight = false
-      } else
-      if (event.keyCode == 16) {
-        isRunning = false
-      } else
-      if (event.keyCode == 82) {
-        interact = false
-      }
-      if (event.keyCode == 81) {
-        reset = false
-      }
+      if (event.keyCode == 38 || event.keyCode == 87) { moveForward = false } else
+      if (event.keyCode == 37 || event.keyCode == 65) { moveLeft = false } else
+      if (event.keyCode == 40 || event.keyCode == 83) { moveBackward = false } else
+      if (event.keyCode == 39 || event.keyCode == 68) { moveRight = false } else
+      if (event.keyCode == 16) { isRunning = false } else
+      if (event.keyCode == 82) { interact = false } else
+      if (event.keyCode == 81) { reset = false }
     }
 
     var onMouseMove = function (event) {
@@ -141,29 +95,18 @@ angular.module('appCtrls', [
       $scope.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
     }
 
-    var enableControls = function (document) {
-      document.onclick = $scope.createBullet
-      document.onkeydown = onKeyDown
-      document.onkeyup = onKeyUp
-      document.onmousemove = onMouseMove
-    }
-
-    var detectFullscreen = function (document) {
-      var fullscreenchange = function () {
-        if (fullscreen.element()) {
-          document.onfullscreenchange = null
-          document.onmozfullscreenchange = null
-          documentdoc.requestPointerLock()
-        }
-      }
-      document.onfullscreenchange = fullscreenchange
-      document.onmozfullscreenchange = fullscreenchange
-    }
-
     var startControls = function (document) {
       document.body.requestPointerLock = pointerlock.request()
       if (/Firefox/i.test(navigator.userAgent)) {
-        detectFullscreen(document)
+        var fullscreenchange = function () {
+          if (fullscreen.element()) {
+            document.onfullscreenchange = null
+            document.onmozfullscreenchange = null
+            document.requestPointerLock()
+          }
+        }
+        document.onfullscreenchange = fullscreenchange
+        document.onmozfullscreenchange = fullscreenchange
         document.body.requestFullscreen = fullscreen.request()
         document.body.requestFullscreen()
       } else {
@@ -172,7 +115,10 @@ angular.module('appCtrls', [
     }
 
     $scope.start = function (document) {
-      enableControls(document)
+      document.onclick = $scope.createBullet
+      document.onkeydown = onKeyDown
+      document.onkeyup = onKeyUp
+      document.onmousemove = onMouseMove
       startControls(document)
     }
 
@@ -185,7 +131,8 @@ angular.module('appCtrls', [
       }
     }
 
-    var activatePointerLock = function (document, error) {
+    $scope.activateControls = function (document, start, error) {
+      document.onclick = start
       document.onpointerlockchange = lockChange
       document.onmozpointerlockchange = lockChange
       document.onwebkitpointerlockchange = lockChange
@@ -194,21 +141,14 @@ angular.module('appCtrls', [
       document.onwebkitpointererror = error
     }
 
-    $scope.activateControls = function (document, start, error) {
-      document.onclick = start
-      activatePointerLock($document[0], error)
-    }
-
     $scope.init = function (config) {
       $scope.scene = new THREE.Scene()
       $scope.objects = []
       $scope.prevTime = performance.now()
       $scope.velocity = new THREE.Vector3()
       var createScene = function () {
-        $scope.scene.fog = new THREE.Fog(
-          config.FOG_COLOR, config.FOG_MIN, config.FOG_MAX)
-        var light = new THREE.HemisphereLight(
-          config.COLOR_SKY, config.COLOR_GROUND, config.LIGHT_INTENSITY)
+        $scope.scene.fog = new THREE.Fog(config.FOG_COLOR, config.FOG_MIN, config.FOG_MAX)
+        var light = new THREE.HemisphereLight(config.COLOR_SKY, config.COLOR_GROUND, config.LIGHT_INTENSITY)
         light.position.set(0.5, 1, 0.75)
         $scope.scene.add(light)
         $scope.renderer.setClearColor(config.BACKGROUND_COLOR)
@@ -238,8 +178,7 @@ angular.module('appCtrls', [
     }
 
     var getView = function () {
-      var raycaster = new THREE.Raycaster(
-        new THREE.Vector3(), new THREE.Vector3(0, - 1, 0), 0, 10)
+      var raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, - 1, 0), 0, 10)
       raycaster.ray.origin.copy($scope.myPosition)
       raycaster.ray.origin.y -= 10
       return raycaster.intersectObjects($scope.objects)
@@ -259,44 +198,28 @@ angular.module('appCtrls', [
       $scope.velocity.z -= $scope.velocity.z * 10.0 * delta
       $scope.velocity.y -= 9.8 * 100.0 * delta // 100.0 = mass
 
-      if (interact) {
-      }
+      if (interact) { }
 
       if (hasCollisions) {
-        if (intersections[0].point.x == $scope.myPosition.x || intersections[0].point.z == $scope.myPosition.z) {
-          $scope.myPosition = $scope.prevPosition
-        }
         $scope.velocity.y = Math.max(0, $scope.velocity.y)
+        if (intersections[0].point.x == $scope.myPosition.x || intersections[0].point.z == $scope.myPosition.z) {
+          $scope.myPosition.x = $scope.prevPosition.x
+          $scope.myPosition.y = $scope.prevPosition.y
+          $scope.myPosition.z = $scope.prevPosition.z
+        }
         if (intersections[0].point.y - $scope.myPosition.y <= 19) {
           $scope.myPosition.setY(intersections[0].point.y + 20)
         }
         canJump = true
       } else
-      if (!hasCollisions) {
-        $scope.prevPosition = $scope.myPosition
-      }
+      if (!hasCollisions) { $scope.prevPosition = $scope.myPosition }
 
-      if (isRunning) {
-        speed = moveCfgs.MOVESPEED * moveCfgs.RUNMULTIPLIER
-      } else {
-        speed = moveCfgs.MOVESPEED
-      }
-
-      if (moveForward) {
-        $scope.velocity.z -= speed * delta
-      } else
-
-      if (moveBackward) {
-        $scope.velocity.z += speed * delta
-      }
-
-      if (moveRight) {
-        $scope.velocity.x += moveCfgs.STRAFESPEED * delta
-      } else
-
-      if (moveLeft) {
-        $scope.velocity.x -= moveCfgs.STRAFESPEED * delta
-      }
+      if (isRunning) { speed = moveCfgs.MOVESPEED * moveCfgs.RUNMULTIPLIER }
+        else { speed = moveCfgs.MOVESPEED }
+      if (moveForward) { $scope.velocity.z -= speed * delta }
+      if (moveBackward) { $scope.velocity.z += speed * delta }
+      if (moveRight) { $scope.velocity.x += moveCfgs.STRAFESPEED * delta }
+      if (moveLeft) { $scope.velocity.x -= moveCfgs.STRAFESPEED * delta }
 
     }
 
@@ -330,42 +253,29 @@ angular.module('appCtrls', [
       $scope.renderer.render($scope.scene, $scope.camera)
     }
 
-    var onWindowResize = function () {
-      $scope.camera.aspect = window.innerWidth / window.innerHeight
-      $scope.camera.updateProjectionMatrix()
-      renderer.setSize(window.innerWidth, window.innerHeight)
-    }
-
     var renderer = new THREE.WebGLRenderer()
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
-    window.addEventListener('resize', onWindowResize, false)
     $scope.renderer = renderer
 
     // objects
     $scope.createBox = function (config, number, x, z) {
-      var material = new THREE.MeshPhongMaterial(
-        { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors })
+      var material = new THREE.MeshPhongMaterial({ specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors })
       material.color.setHSL(Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75)
       var geometry = new THREE.BoxGeometry(20, 20, 20);
       for (var i = 0, l = geometry.faces.length; i < l; i ++) {
-        geometry.faces[i].vertexColors[0] = new THREE.Color().setHSL(
-          Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75)
-        geometry.faces[i].vertexColors[1] = new THREE.Color().setHSL(
-          Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75)
-        geometry.faces[i].vertexColors[2] = new THREE.Color().setHSL(
-          Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75)
+        geometry.faces[i].vertexColors[0] = new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75)
+        geometry.faces[i].vertexColors[1] = new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75)
+        geometry.faces[i].vertexColors[2] = new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75)
       }
       for (var i = 0; i < 1; i ++) {
         var mesh = new THREE.Mesh(geometry, material)
         mesh.position.y = Math.floor(Math.random() * 20)
         mesh.position.x = x || Math.floor(
-          Math.random() * config.GROUND_SCALE.x * config.TILE_ZOOM)
-          -((config.GROUND_SCALE.x * config.TILE_ZOOM)/2)
+          Math.random() * config.GROUND_SCALE.x * config.TILE_ZOOM)-((config.GROUND_SCALE.x * config.TILE_ZOOM)/2)
         mesh.position.z = z || Math.floor(
-          Math.random() * config.GROUND_SCALE.z * config.TILE_ZOOM)
-          -((config.GROUND_SCALE.z * config.TILE_ZOOM)/2)
+          Math.random() * config.GROUND_SCALE.z * config.TILE_ZOOM)-((config.GROUND_SCALE.z * config.TILE_ZOOM)/2)
         $scope.scene.add(mesh)
         $scope.objects.push(mesh)
       }
@@ -381,11 +291,9 @@ angular.module('appCtrls', [
           object.scale.multiplyScalar(config.OBJECTS_SCALE.multiple)
           object.rotation.y = Math.floor(Math.random() * 360)
           object.position.x = x || Math.floor(
-            Math.random() * config.GROUND_SCALE.x * config.TILE_ZOOM)
-            -((config.GROUND_SCALE.x * config.TILE_ZOOM) / 2)
+            Math.random() * config.GROUND_SCALE.x * config.TILE_ZOOM)-((config.GROUND_SCALE.x * config.TILE_ZOOM) / 2)
           object.position.z = z || Math.floor(
-            Math.random() * config.GROUND_SCALE.z * config.TILE_ZOOM)
-            -((config.GROUND_SCALE.z * config.TILE_ZOOM) / 2)
+            Math.random() * config.GROUND_SCALE.z * config.TILE_ZOOM)-((config.GROUND_SCALE.z * config.TILE_ZOOM) / 2)
           $scope.scene.add(object)
           $scope.objects.push(object.children[0])
         })
@@ -395,17 +303,15 @@ angular.module('appCtrls', [
     $scope.createBullet = function () {
       var material = new THREE.MeshBasicMaterial({color: 0x333333})
       var geometry = new THREE.SphereGeometry(2, 6, 6)
-      var bullet = new THREE.Mesh(geometry, material)
-      bullet.position.set($scope.myPosition.x, $scope.myPosition.y, $scope.myPosition.z)
       var vector = new THREE.Vector3($scope.mouse.x, $scope.mouse.y, 1)
       vector.unproject($scope.camera)
-      bullet.ray = new THREE.Ray(
-        $scope.camera.position, vector.sub($scope.camera.position).normalize())
+      var bullet = new THREE.Mesh(geometry, material)
+      bullet.position.set($scope.myPosition.x, $scope.myPosition.y, $scope.myPosition.z)
+      bullet.ray = new THREE.Ray($scope.camera.position, vector.sub($scope.camera.position).normalize())
       bullet.owner = $scope.camera
       bullet.castShadow = true
       $scope.bullets.push(bullet)
       $scope.scene.add(bullet)
-
       startControls($document[0]) // added this so all clicks regain pointer lock
     }
 
@@ -426,7 +332,7 @@ angular.module('appCtrls', [
   }
 ])
 
-angular.module('rooms', [])
+angular.module('rooms', ['ngRoute'])
 .constant('treeCfgs', {
   FOG_COLOR: 0xffffff,
   FOG_MIN: 50,
@@ -446,31 +352,6 @@ angular.module('rooms', [])
   SCALE_Z: 50,
   TREE_OBJ: "./img/objects/tree/tree.obj",
 })
-.controller('treeCtrl', ['$scope', '$document', 'pointerlock', 'treeCfgs',
-  function ($scope, $document, pointerlock, treeCfgs) {
-    var blocker = document.getElementById('blocker')
-    var instructions = document.getElementById('instructions')
-
-    if (pointerlock.available()) {
-      var start = function () {
-        blocker.style.display = 'none'
-        instructions.style.display = 'none'
-        $scope.start($document[0])
-      }
-      var error = function () {
-        instructions.style.display = ''
-      }
-      $scope.activateControls($document[0], start, error)
-      $scope.init(treeCfgs)
-      $scope.animate()
-      $scope.createTree(treeCfgs, 1, 1, -100)
-      $scope.createBox(treeCfgs)
-    } else {
-      instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API'
-    }
-
-  }
-])
 .constant('forestCfgs', {
   FOG_COLOR: 0xffffff,
   FOG_MIN: 30,
@@ -487,30 +368,6 @@ angular.module('rooms', [])
   OBJECTS_SCALE: {x: 0, y: 10, z: 0, multiple: 50},
   TREE_OBJ: "./img/objects/tree/tree.obj",
 })
-.controller('forestCtrl', ['$scope', '$document', 'pointerlock', 'forestCfgs',
-  function ($scope, $document, pointerlock, forestCfgs) {
-    var blocker = document.getElementById('blocker')
-    var instructions = document.getElementById('instructions')
-
-    if (pointerlock.available()) {
-      var start = function () {
-        blocker.style.display = 'none'
-        instructions.style.display = 'none'
-        $scope.start($document[0])
-      }
-      var error = function () {
-        instructions.style.display = ''
-      }
-      $scope.activateControls($document[0], start, error)
-      $scope.init(forestCfgs)
-      $scope.animate()
-      $scope.createTree(forestCfgs, 20)
-    } else {
-      instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API'
-    }
-
-  }
-])
 .constant('deepforestCfgs', {
   FOG_COLOR: 0x777788,
   FOG_MIN: 15,
@@ -527,27 +384,58 @@ angular.module('rooms', [])
   OBJECTS_SCALE: {x: 10, y: 10, z: 10, multiple: 100},
   TREE_OBJ: "./img/objects/tree/tree.obj",
 })
-.controller('deepforestCtrl', ['$scope', '$document', 'pointerlock', 'deepforestCfgs',
-  function ($scope, $document, pointerlock, deepforestCfgs) {
-    var blocker = document.getElementById('blocker')
-    var instructions = document.getElementById('instructions')
+.controller('treeCtrl', ['$scope', 'treeCfgs',
+  function ($scope, treeCfgs) {
+    $scope.createTree(treeCfgs, 1, 1, -100)
+    $scope.createBox(treeCfgs)
+  }
+])
+.controller('forestCtrl', ['$scope', 'forestCfgs',
+  function ($scope, forestCfgs) {
+    $scope.createTree(forestCfgs, 20)
+  }
+])
+.controller('deepforestCtrl', ['$scope', 'deepforestCfgs',
+  function ($scope, deepforestCfgs) {
+    $scope.createTree(deepforestCfgs, 40)
+  }
+])
+.config(['$routeProvider',
+  function ($routeProvider) {
+    $routeProvider
+    .otherwise({ redirectTo: '/' })
+    .when('/', { templateUrl: 'pages/home.html' })
+    .when('/:room*?', {
+      templateUrl: 'pages/components/start.html',
+      controller: ['$routeParams', '$scope', 'pointerlock', '$document', '$controller',
+        function ($routeParams, $scope, pointerlock, $document, $controller) {
+          var blocker = document.getElementById('blocker')
+          var instructions = document.getElementById('instructions')
 
-    if (pointerlock.available()) {
-      var start = function () {
-        blocker.style.display = 'none'
-        instructions.style.display = 'none'
-        $scope.start($document[0])
-      }
-      var error = function () {
-        instructions.style.display = ''
-      }
-      $scope.activateControls($document[0], start, error)
-      $scope.init(deepforestCfgs)
-      $scope.animate()
-      $scope.createTree(deepforestCfgs, 40)
-    } else {
-      instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API'
-    }
+          var config = $routeParams.room + "Cfgs"
+          var config = angular.injector(['ng', 'rooms']).get(config)
+          var controller = $routeParams.room + "Ctrl"
+
+          if (pointerlock.available()) {
+            var start = function () {
+              blocker.style.display = 'none'
+              instructions.style.display = 'none'
+              $scope.start($document[0])
+            }
+            var error = function () {
+              instructions.style.display = ''
+            }
+            $scope.activateControls($document[0], start, error)
+          } else {
+            instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API'
+          }
+
+          $scope.init(config)
+          $scope.animate()
+          $controller(controller, { $scope: $scope })
+        }
+      ]
+    })
 
   }
 ])
